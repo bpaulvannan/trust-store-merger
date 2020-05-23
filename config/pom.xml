@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>bpv.utils</groupId>
+        <artifactId>trust-store-merger</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <groupId>bpv.utils</groupId>
+    <artifactId>config</artifactId>
+    <version>${project.version</version>
+    <packaging>pom</packaging>
+
+    <name>config</name>
+    <description>Utility to merge ssl certificates</description>
+
+    <properties>
+        <server.truststore.path>${project.build.directory}/server-truststore.jks</server.truststore.path>
+        <server.truststore.pass>5erverP@55w0rd</server.truststore.pass>
+        <client.truststore.path>${project.build.directory}/client-truststore.jks</client.truststore.path>
+        <client.truststore.pass>C1!entP@55w0rd</client.truststore.pass>
+
+        <httpclient.version>4.5.12</httpclient.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.13</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.5.6</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>keytool-maven-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>importCertificate</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <id>stackexchange-server</id>
+                        <configuration>
+                            <keystore>${server.truststore.path}</keystore>
+                            <storepass>${server.truststore.pass}</storepass>
+                            <alias>stackexchange</alias>
+                            <file>${project.basedir}/src/main/resources/certs/server/stackexchange.com.pem</file>
+                            <noprompt>true</noprompt>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <goals>
+                            <goal>importCertificate</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <id>badssl-server</id>
+                        <configuration>
+                            <keystore>${server.truststore.path}</keystore>
+                            <storepass>${server.truststore.pass}</storepass>
+                            <alias>badssl</alias>
+                            <file>${project.basedir}/src/main/resources/certs/server/badssl.com.pem</file>
+                            <noprompt>true</noprompt>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <goals>
+                            <goal>importKeystore</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <id>badssl-client</id>
+                        <configuration>
+                            <srckeystore>${project.basedir}/src/main/resources/certs/client/badssl.com-client.p12</srckeystore>
+                            <srcstorepass>badssl.com</srcstorepass>
+                            <srcstoretype>PKCS12</srcstoretype>
+                            <srcalias>1</srcalias>
+                            <destkeystore>${client.truststore.path}</destkeystore>
+                            <deststorepass>${client.truststore.pass}</deststorepass>
+                            <deststoretype>JKS</deststoretype>
+                            <destalias>badssl</destalias>
+                            <noprompt>true</noprompt>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
